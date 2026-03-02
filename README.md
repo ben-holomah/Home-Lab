@@ -77,3 +77,8 @@ I found a list online of safe network options for specific use cases.
 
 **Installing Kali as the Attacker's Machine:**
 - I noticed that the download file for Kali was a 7 zip file extension, so i had to download it.
+
+
+**Installing Splunk on my Windows Machine:**
+- After the installation process and setting things up, my first action was to generate some data on my environment.
+- I clicked monitor, local event logs, and for the log events i chose: Application, Security, and System.
