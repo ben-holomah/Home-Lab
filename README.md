@@ -1,7 +1,7 @@
 # SOC Home Lab — Malware Analysis & Detection
-## Performed By Ben Holomah
+Built By Ben Holomah
 ---
-## Environment Baseline
+## Homelab Environment Baseline
 - **Hypervisor:** VMware
 - **SIEM:** Splunk 10.2.1
 - **Endpoints:** Windows 11, Kali Linux
