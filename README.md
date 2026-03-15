@@ -1,10 +1,13 @@
 # SOC Home Lab — Malware Analysis & Detection
-Built By Ben Holomah
----
+Built By: Ben Holomah
+
 ## Homelab Environment Baseline
 - **Hypervisor:** VMware
 - **SIEM:** Splunk 10.2.1
 - **Endpoints:** Windows 11, Kali Linux
+
+## Overview
+- In this lab I built a controlled home environment to simulate a real-world attack scenario and practice detecting it using a SIEM. Using VMware as my hypervisor, I configured a Windows 11 machine running Splunk as my target and log aggregation platform, and a Kali Linux machine as my attacker. I used Sysmon to enrich endpoint telemetry and Metasploit to generate a realistic payload disguised as a PDF file. The goal was to practice the full cycle — executing an attack, capturing the telemetry, and identifying the malicious activity through Splunk searches. This lab was built to develop hands-on experience with tools and workflows commonly used in SOC environments.
 
 ---
 
